@@ -1,0 +1,11 @@
+{
+    "name": "yinyan",
+    "version": "1.0.0",
+    "license": "MIT",
+    "author": {
+        "name": "Israel Emmanuel Matenly Forestal"
+    },
+    "workspaces": [
+        "packages/*"
+    ]
+}
