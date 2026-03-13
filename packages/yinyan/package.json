@@ -21,7 +21,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "bun build ./src/index.ts --outdir ./dist --minify --sourcemap && bun x tsc",
+    "clean": "rm -rf dist",
+    "build": "bun run clean && bun build ./src/index.ts --outdir ./dist --minify --sourcemap && tsc -p tsconfig.json",
     "prepublishOnly": "bun run build",
     "test": "bun test"
   },
