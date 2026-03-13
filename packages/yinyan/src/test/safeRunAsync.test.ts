@@ -1,4 +1,4 @@
-import { y } from "../index";
+import { y } from "../";
 
 describe("y.safeRunAsync", () => {
   // Cas 1 : Succès (Comme quand le token est valide)

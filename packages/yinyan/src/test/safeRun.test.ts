@@ -1,4 +1,4 @@
-import { y } from "../index.ts";
+import { y } from "../";
 
 describe("y.safeRun", () => {
   test("should return success and data on valid execution", () => {
