@@ -1,7 +1,10 @@
 {
-  "name": "yinyan",
+  "name": "@emmanuelcode/yinyan",
   "version": "1.0.0",
   "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "Handle errors as values in TypeScript. Balanced execution for sync and async flows.",
   "author": {
     "name": "Israel Emmanuel Matenly Forstal"
