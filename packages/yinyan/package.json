@@ -1,8 +1,28 @@
 {
   "name": "yinyan",
   "private": "false",
-  "module": "index.ts",
+  "description": "Handle errors as values in TypeScript. Balanced execution for sync and async flows.",
+  "author": {
+    "name": "Israel Emmanuel Matenly Forstal"
+  },
+  "keywords": [
+    "typescript",
+    "error-handling",
+    "result-type",
+    "safe-run",
+    "async"
+  ],
   "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun build ./src/index.ts --outdir ./dist --minify --sourcemap",
+    "prepublishOnly": "bun run build"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
