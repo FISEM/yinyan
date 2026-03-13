@@ -1,5 +1,6 @@
 {
   "name": "yinyan",
+  "version": "1.0.0",
   "private": "false",
   "description": "Handle errors as values in TypeScript. Balanced execution for sync and async flows.",
   "author": {
@@ -20,9 +21,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "bun build ./src/index.ts --outdir ./dist --minify --sourcemap",
-    "build-types": "bun x tsc --declaration --emitDeclarationOnly --outDir dist",
-    "prepublishOnly": "bun run build"
+    "build": "bun build ./src/index.ts --outdir ./dist --minify --sourcemap && bun x tsc",
+    "prepublishOnly": "bun run build",
+    "test": "bun test"
   },
   "devDependencies": {
     "@types/bun": "latest"
