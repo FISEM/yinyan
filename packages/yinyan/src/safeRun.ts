@@ -1,9 +1,24 @@
-import type { Result } from "./types";
+type safeRun<T, E = Error> = {
+  default: <DefaultValue>(value: DefaultValue) => T | DefaultValue;
+  onErr: <R, E>(handleError: (error: E) => R) => T | R;
+};
 
-export function safeRun<T, E = Error>(fn: () => T): Result<T, E> {
-  try {
-    return { success: true, data: fn(), error: null };
-  } catch (e) {
-    return { success: false, data: null, error: e as Error as E };
-  }
+export function safeRun<T>(fn: () => T): safeRun<T> {
+  return {
+    default<DefaultValue>(value: DefaultValue): T | DefaultValue {
+      try {
+        return fn();
+      } catch {
+        return value;
+      }
+    },
+
+    onErr<R, E>(handleError: (error: E) => R): T | R {
+      try {
+        return fn();
+      } catch (e) {
+        return handleError(e as E);
+      }
+    },
+  };
 }

@@ -1,33 +1,62 @@
-import { y } from "../";
+import { expect, test, describe, jest, beforeEach, afterEach } from "bun:test";
+import { safeRunAsync } from "../";
 
-describe("y.safeRunAsync", () => {
-  // Cas 1 : Succès (Comme quand le token est valide)
-  test("should handle a successful async operation", async () => {
-    // On simule une fonction qui prend du temps et réussit
-    async function mockAuthenticate(token: string) {
-      return { access: "valid_token" };
-    }
-
-    const result = await y.safeRunAsync(mockAuthenticate("my_token"));
-
-    expect(result.success).toBe(true);
-    expect(result.data).toEqual({ access: "valid_token" });
-    expect(result.error).toBeNull();
+describe("safeRunAsync", () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
   });
 
-  // Cas 2 : Échec (Comme ton enfer de débuggage SurrealDB)
-  test("should catch the crash when the promise rejects", async () => {
-    // On simule exactement ce que fait SurrealDB quand le token expire
-    async function mockExpiredAuth() {
-      throw new Error("Token expired"); // Le SDK fait un 'throw' interne
-    }
+  afterEach(() => {
+    jest.useRealTimers();
+  });
 
-    // On passe l'appel de la fonction à safeRunAsync
-    const result = await y.safeRunAsync(mockExpiredAuth());
+  test("should work without timeout", async () => {
+    const task = async () => "no_timeout";
+    const result = await safeRunAsync(task).default("fallback");
+    expect(result).toBe("no_timeout");
+  });
 
-    expect(result.success).toBe(false);
-    expect(result.data).toBeNull();
-    expect(result.error).toBeInstanceOf(Error);
-    expect((result.error as Error).message).toBe("Token expired");
+  test("should return default value when timing out", async () => {
+    const slowTask = () =>
+      new Promise((resolve) => {
+        setTimeout(() => resolve("too slow"), 1000);
+      });
+
+    const promise = safeRunAsync(slowTask, 500).default("timeout_hit");
+
+    jest.advanceTimersByTime(600);
+
+    const result = await promise;
+    expect(result).toBe("timeout_hit");
+  });
+
+  test("should return data if it finishes before timeout", async () => {
+    const task = () =>
+      new Promise((resolve) => {
+        setTimeout(() => resolve("done"), 100);
+      });
+
+    const promise = safeRunAsync(task, 500).default("failed");
+
+    jest.advanceTimersByTime(150);
+
+    const result = await promise;
+    expect(result).toBe("done");
+  });
+
+  test("should trigger onErr on timeout", async () => {
+    const slowTask = () =>
+      new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("too slow")), 1000);
+      });
+
+    const promise = safeRunAsync(slowTask, 100).onErr(
+      (err: Error) => err.message,
+    );
+
+    jest.advanceTimersByTime(150);
+
+    const result = await promise;
+    expect(result).toContain("timed out after 100ms");
   });
 });

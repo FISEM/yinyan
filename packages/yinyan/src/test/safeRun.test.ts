@@ -1,30 +1,52 @@
 import { y } from "../";
 
 describe("y.safeRun", () => {
-  test("should return success and data on valid execution", () => {
-    const validJson = '{"status": "ok"}';
-    const result = y.safeRun(() => JSON.parse(validJson));
-
-    expect(result.success).toBe(true);
-    expect(result.data).toEqual({ status: "ok" });
-    expect(result.error).toBeNull();
-  });
-
-  test("should return failure and error when function throws", () => {
-    const invalidJson = "{ invalid }";
-    const result = y.safeRun(() => JSON.parse(invalidJson));
-
-    expect(result.success).toBe(false);
-    expect(result.data).toBeNull();
-    expect(result.error).toBeInstanceOf(Error);
-  });
-
-  test("should handle non-Error throws (strings, etc.)", () => {
-    const result = y.safeRun(() => {
-      throw "unexpected string error";
+  describe(".default()", () => {
+    test("should return data if execution succeeds", () => {
+      const result = y.safeRun(() => "success").default("fallback");
+      expect(result).toBe("success");
     });
 
-    expect(result.success).toBe(false);
-    expect(result.error).toBe("unexpected string error");
+    test("should return fallback value if execution fails", () => {
+      const result = y
+        .safeRun(() => {
+          throw new Error();
+        })
+        .default("fallback");
+      expect(result).toBe("fallback");
+    });
+  });
+
+  describe(".onErr()", () => {
+    test("should return data if execution succeeds (callback not called)", () => {
+      const spy = jest.fn();
+      const result = y.safeRun(() => "success").onErr(spy);
+
+      expect(result).toBe("success");
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    test("should execute callback and return its result if execution fails", () => {
+      const errorMsg = "failed!";
+      const result = y
+        .safeRun(() => {
+          throw new Error(errorMsg);
+        })
+        .onErr((err: Error) => {
+          return err.message;
+        });
+
+      expect(result).toBe(errorMsg);
+    });
+
+    test("should handle non-Error throws in onErr", () => {
+      const result = y
+        .safeRun(() => {
+          throw "string error";
+        })
+        .onErr((err: Error) => err);
+
+      expect(result).toBe("string error");
+    });
   });
 });
